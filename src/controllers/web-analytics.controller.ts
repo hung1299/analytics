@@ -271,7 +271,19 @@ export const answerByQuestion = async (req: Request, res: Response) => {
     const {web, startDate, endDate, device, sourceName, sourceSource, question} = req.body
     let result = 0;
     if(web && startDate && endDate && device && sourceName && sourceSource && question) {
-        result = await getResultByQuestion({web, startDate, endDate, device, sourceName, sourceSource, question});
+        try {
+            result = await getResultByQuestion({
+                web,
+                startDate,
+                endDate,
+                device,
+                sourceName,
+                sourceSource,
+                question,
+            });
+        } catch (error) {
+            console.log(error);
+        }
     }
     return res.status(200).json({"result": result});
 }
