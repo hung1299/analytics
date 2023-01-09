@@ -268,10 +268,26 @@ const getResultByQuestion = async ({web, startDate, endDate, device, sourceName,
 }
 
 export const answerByQuestion = async (req: Request, res: Response) => {
-    const {web, startDate, endDate, device, sourceName, sourceSource, question} = req.body
     let result = 0;
-    if(web && startDate && endDate && device && sourceName && sourceSource && question) {
-        try {
+    try {
+        const {
+            web,
+            startDate,
+            endDate,
+            device,
+            sourceName,
+            sourceSource,
+            question,
+        } = req.body;
+        if (
+            web &&
+            startDate &&
+            endDate &&
+            device &&
+            sourceName &&
+            sourceSource &&
+            question
+        ) {
             result = await getResultByQuestion({
                 web,
                 startDate,
@@ -281,9 +297,9 @@ export const answerByQuestion = async (req: Request, res: Response) => {
                 sourceSource,
                 question,
             });
-        } catch (error) {
-            console.log(error);
         }
+    } catch (error) {
+        console.log(error);
     }
-    return res.status(200).json({"result": result});
-}
+    return res.status(200).json({ result: result });
+};

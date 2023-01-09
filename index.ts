@@ -19,8 +19,8 @@ app.use(
 
 app.use('/web-analytics', webAnalyticRouter)
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('SERVER IS WORKING');
+app.get("/", (req: Request, res: Response) => {
+    res.send("SERVER IS WORKING");
 });
 
 app.listen(port, () => {

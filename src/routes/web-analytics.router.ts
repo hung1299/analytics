@@ -4,6 +4,6 @@ import APIConfig from '../utils/APIConfig';
 
 const webAnalyticRouter = express.Router();
 
-webAnalyticRouter.get(APIConfig.GET_ANSWER_BY_QUESTION, answerByQuestion);
+webAnalyticRouter.post(APIConfig.GET_ANSWER_BY_QUESTION, answerByQuestion);
 
 export default webAnalyticRouter;
