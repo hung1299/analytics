@@ -82,7 +82,7 @@ const getTotalUsers = async ({
     country,
 }: IParams) => {
     let query =
-        "SELECT COUNT(DISTINCT(user_first_touch_timestamp)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
         startDate +
         "' AND '" +
         endDate +
@@ -111,7 +111,7 @@ const getNbUsersSearch = async ({
     country,
 }: IParams) => {
     let query =
-        "SELECT COUNT(DISTINCT(user_first_touch_timestamp)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
         startDate +
         "' AND '" +
         endDate +
@@ -168,7 +168,7 @@ const getNbUsersPreviewWorksheets = async ({
     country,
 }: IParams) => {
     let query =
-        "SELECT COUNT(DISTINCT(user_first_touch_timestamp)) FROM `micro-enigma-235001.analytics_293685876.events_*` CROSS JOIN UNNEST(event_params) ep1 WHERE _TABLE_SUFFIX BETWEEN '" +
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` CROSS JOIN UNNEST(event_params) ep1 WHERE _TABLE_SUFFIX BETWEEN '" +
         startDate +
         "' AND '" +
         endDate +
@@ -282,7 +282,7 @@ const getNbUsersByAction = async ({
     action,
 }: IParams) => {
     let query =
-        "SELECT COUNT(DISTINCT(user_first_touch_timestamp)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
         startDate +
         "' AND '" +
         endDate +
@@ -369,7 +369,7 @@ const getNbUsersViewCollection = async ({
     country,
 }: IParams) => {
     let query =
-        "SELECT COUNT(DISTINCT(user_first_touch_timestamp)) FROM `micro-enigma-235001.analytics_293685876.events_*` CROSS JOIN UNNEST(event_params) ep1 WHERE _TABLE_SUFFIX BETWEEN '" +
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` CROSS JOIN UNNEST(event_params) ep1 WHERE _TABLE_SUFFIX BETWEEN '" +
         startDate +
         "' AND '" +
         endDate +
@@ -398,7 +398,7 @@ const getNbUsersLogin = async ({
     country,
 }: IParams) => {
     let query =
-        "SELECT COUNT(DISTINCT(user_first_touch_timestamp)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` WHERE _TABLE_SUFFIX BETWEEN '" +
         startDate +
         "' AND '" +
         endDate +
