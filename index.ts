@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import webAnalyticRouter from './src/routes/web-analytics.router';
 import bodyParser from "body-parser";
+import wszBrowsingAnalyticsRouter from "./src/routes/wsz-browsing-analytics.router";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(
 );
 
 app.use('/web-analytics', webAnalyticRouter)
+app.use("/wsz-browsing-analytics", wszBrowsingAnalyticsRouter);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("SERVER IS WORKING");

@@ -268,7 +268,7 @@ const getResultByQuestion = async ({web, startDate, endDate, device, sourceName,
 }
 
 export const answerByQuestion = async (req: Request, res: Response) => {
-    let result = 0;
+    let result = -1;
     try {
         const {
             web,
