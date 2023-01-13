@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from 'axios'
+import APIConfig from "../utils/APIConfig";
 
 interface IQuestionParams {
     web: string, 
@@ -127,9 +128,9 @@ const getQueryCondition = (query: string, device: string, sourceName: string, so
 const getBigQueryData = async (query: string) => {
     const url = process.env.DASHBOARD_API || ''
     try {
-        const {data} = await axios.post(url, {
-            query: query
-        })
+        const { data } = await axios.post(url + APIConfig.BIG_QUERY, {
+            query: query,
+        });
         return data
     } catch (error) {
         console.log("ERROR", error)

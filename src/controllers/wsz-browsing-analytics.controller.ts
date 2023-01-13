@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import APIConfig from "../utils/APIConfig";
+
+const NOT_SUPPORTED = -2;
 
 interface IParams {
     query?: string;
@@ -11,7 +14,13 @@ interface IParams {
     country: string;
     event?: string;
     action?: string;
+    params?: any;
 }
+
+const parseDate = (date: number) => {
+    const text = date.toString();
+    return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6)}`;
+};
 
 const getQueryCondition = ({
     query,
@@ -62,9 +71,80 @@ const getQueryCondition = ({
 const getBigQueryData = async (query: string) => {
     const url = process.env.DASHBOARD_API || "";
     try {
-        const { data } = await axios.post(url, {
+        const { data } = await axios.post(url + APIConfig.BIG_QUERY, {
             query: query,
         });
+        return data;
+    } catch (error) {
+        console.log("ERROR", error);
+        return null;
+    }
+};
+
+const getGA4Params = ({
+    startDate,
+    endDate,
+    params,
+    device,
+    sourceName,
+    country,
+}: IParams) => {
+    const result = {
+        ...params,
+        startDate: parseDate(startDate ?? 20221115),
+        endDate: parseDate(endDate ?? 20221124),
+        appType: {
+            type: "web",
+            streamId: "293685876",
+        },
+        dimensions: ["country"],
+        dimensionFilter: {
+            expressions: [
+                {
+                    expressions: [
+                        {
+                            key: "country",
+                            value: "Vietnam",
+                            matchType: "EXACT",
+                        },
+                    ],
+                    filterType: "not",
+                },
+            ],
+            filterType: "and",
+        },
+        metricAvgs: ["total"],
+    };
+    if (device !== "all") {
+        result["dimensions"].push("deviceCategory");
+        result["dimensionFilter"]["expressions"].push({
+            key: "deviceCategory",
+            value: device,
+            matchType: "EXACT",
+        });
+    }
+    if (country === "US only") {
+        result["dimensionFilter"]["expressions"].push({
+            key: "country",
+            value: "United States",
+            matchType: "EXACT",
+        });
+    }
+    if (sourceName !== "all") {
+        result["dimensions"].push("firstUserSource");
+        result["dimensionFilter"]["expressions"].push({
+            key: "firstUserSource",
+            value: sourceName,
+            matchType: "EXACT",
+        });
+    }
+    return result;
+};
+
+const getGA4Data = async (params: any) => {
+    const url = process.env.DASHBOARD_API || "";
+    try {
+        const { data } = await axios.post(url + APIConfig.GA, params);
         return data;
     } catch (error) {
         console.log("ERROR", error);
@@ -99,6 +179,103 @@ const getTotalUsers = async ({
         return parseInt(data[0]["f0_"]);
     }
     return 0;
+};
+
+// ******* OVERVIEW ******* //
+const getAVGEngagementTime = async ({
+    startDate,
+    endDate,
+    device,
+    sourceName,
+    sourceSource,
+    country,
+}: IParams) => {
+    if (["landing", "google_ads"].indexOf(sourceName) > -1) {
+        return NOT_SUPPORTED;
+    }
+    const params = getGA4Params({
+        startDate,
+        endDate,
+        params: {
+            metrics: ["activeUsers", "userEngagementDuration"],
+        },
+        device,
+        sourceName,
+        sourceSource,
+        country,
+    });
+    try {
+        const data = await getGA4Data(params);
+        if (!data?.totals) {
+            return 0;
+        }
+        const result =
+            parseInt(data["totals"][1]["userEngagementDuration"]) /
+            parseInt(data["totals"][0]["activeUsers"]);
+        return result;
+    } catch (error) {
+        return -1;
+    }
+};
+
+const getReturnUsers = async ({
+    startDate,
+    endDate,
+    device,
+    sourceName,
+    sourceSource,
+    country,
+}: IParams) => {
+    let query =
+        "SELECT COUNT(DISTINCT(user_pseudo_id)) FROM `micro-enigma-235001.analytics_293685876.events_*` CROSS JOIN UNNEST(event_params) ep1 WHERE _TABLE_SUFFIX BETWEEN '" +
+        startDate +
+        "' AND '" +
+        endDate +
+        "' AND event_name = 'session_start' AND ep1.key = 'ga_session_number' AND ep1.value.int_value > 1";
+    if (country == "All Countries except VN") {
+        query += " AND geo.country != 'Vietnam' ";
+    } else if (country == "US only") {
+        query += " AND geo.country = 'United States' ";
+    }
+    const data: any = await getBigQueryData(query);
+    if (data) {
+        return parseInt(data[0]["f0_"]);
+    }
+    return 0;
+};
+
+const getBounceRate = async ({
+    startDate,
+    endDate,
+    device,
+    sourceName,
+    sourceSource,
+    country,
+}: IParams) => {
+    if (["landing", "google_ads"].indexOf(sourceName) > -1) {
+        return NOT_SUPPORTED;
+    }
+    const params = getGA4Params({
+        startDate,
+        endDate,
+        params: {
+            metrics: ["bounceRate"],
+        },
+        device,
+        sourceName,
+        sourceSource,
+        country,
+    });
+    try {
+        const data = await getGA4Data(params);
+        if (!data?.totals) {
+            return 0;
+        }
+        const result = parseFloat(data["totals"][0]["bounceRate"]);
+        return parseFloat(result.toFixed(2));
+    } catch (error) {
+        return -1;
+    }
 };
 
 // ******* SEARCH ******* //
@@ -144,6 +321,34 @@ const getNbSearches = async ({
         "' AND '" +
         endDate +
         "' AND event_name = 'view_search_results'";
+    query = getQueryCondition({
+        query,
+        device,
+        sourceName,
+        sourceSource,
+        country,
+    });
+    const data: any = await getBigQueryData(query);
+    if (data) {
+        return parseInt(data[0]["f0_"]);
+    }
+    return 0;
+};
+
+const getNbClickWorksheetFromSearch = async ({
+    startDate,
+    endDate,
+    device,
+    sourceName,
+    sourceSource,
+    country,
+}: IParams) => {
+    let query =
+        "SELECT COUNT(*) FROM `micro-enigma-235001.analytics_293685876.events_*` CROSS JOIN UNNEST(event_params) ep1 CROSS JOIN UNNEST(event_params) ep2 WHERE _TABLE_SUFFIX BETWEEN '" +
+        startDate +
+        "' AND '" +
+        endDate +
+        "' AND event_name = 'page_view' AND ep1.key = 'page_location' AND ep1.value.string_value LIKE '%printable-interactive%' AND ep2.key = 'page_referrer' AND ep2.value.string_value LIKE 'https://worksheetzone.org/search%'";
     query = getQueryCondition({
         query,
         device,
@@ -446,8 +651,44 @@ const getResultByEvent = async ({
                 sourceSource,
                 country,
             });
+        case "overview_avg_engagement_time":
+            return await getAVGEngagementTime({
+                startDate,
+                endDate,
+                device,
+                sourceName,
+                sourceSource,
+                country,
+            });
+        case "overview_return_users":
+            return await getReturnUsers({
+                startDate,
+                endDate,
+                device,
+                sourceName,
+                sourceSource,
+                country,
+            });
+        case "overview_bounce_rate":
+            return await getBounceRate({
+                startDate,
+                endDate,
+                device,
+                sourceName,
+                sourceSource,
+                country,
+            });
         case "search_number_search":
             return await getNbSearches({
+                startDate,
+                endDate,
+                device,
+                sourceName,
+                sourceSource,
+                country,
+            });
+        case "search_number_click_ws":
+            return await getNbClickWorksheetFromSearch({
                 startDate,
                 endDate,
                 device,
@@ -522,7 +763,6 @@ const getResultByEvent = async ({
                 sourceName,
                 sourceSource,
                 country,
-                action,
             });
         case "logins_users":
             return await getNbUsersLogin({
