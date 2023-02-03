@@ -1,5 +1,6 @@
 import express from "express";
 import {
+    getAllCategories,
     getDataByEvent,
     getListWorksheetConvert,
     getTrafficReferralSources,
@@ -14,6 +15,7 @@ wszBrowsingAnalyticsRouter.post(
     getTrafficReferralSources
 );
 wszBrowsingAnalyticsRouter.post(APIConfig.GET_DATA_BY_EVENT, getDataByEvent);
+wszBrowsingAnalyticsRouter.post(APIConfig.GET_ALL_CATEGORIES, getAllCategories);
 
 wszBrowsingAnalyticsRouter.post(
     APIConfig.GET_LIST_WORKSHEET_CONVERT,
