@@ -5,6 +5,7 @@ import {
     getListWorksheetConvert,
     getTrafficReferralSources,
     getWSInfoByEvent,
+    getCategoryInfoByName,
 } from "../controllers/wsz-browsing-analytics.controller";
 import APIConfig from "../utils/APIConfig";
 
@@ -24,5 +25,9 @@ wszBrowsingAnalyticsRouter.post(
 wszBrowsingAnalyticsRouter.post(
     APIConfig.GET_WS_CONVERT_INFO,
     getWSInfoByEvent
+);
+wszBrowsingAnalyticsRouter.post(
+    APIConfig.GET_CATEGORY_INFO_BY_NAME,
+    getCategoryInfoByName
 );
 export default wszBrowsingAnalyticsRouter;

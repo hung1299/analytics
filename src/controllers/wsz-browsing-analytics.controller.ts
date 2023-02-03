@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+    getInfosByCategoryName,
     getResultByEvent,
     getSheetCategories,
 } from "../services/wsz-browsing-analytics.service";
@@ -147,5 +148,22 @@ export const getDataByEvent = async (req: Request, res: Response) => {
 export const getAllCategories = async (req: Request, res: Response) => {
     const result = getSheetCategories();
 
+    return res.status(200).json(result);
+};
+
+export const getCategoryInfoByName = async (req: Request, res: Response) => {
+    let result: any = [];
+    try {
+        const { startDate, endDate, topicName } = req.body;
+        if (startDate && endDate && topicName) {
+            result = await getInfosByCategoryName({
+                startDate,
+                endDate,
+                topicName,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
     return res.status(200).json(result);
 };

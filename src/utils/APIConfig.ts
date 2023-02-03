@@ -10,6 +10,7 @@ class APIConfig {
     static GET_LIST_WORKSHEET_CONVERT = "/get-list-ws-convert";
     static GET_WS_CONVERT_INFO = "/get-ws-convert-info";
     static GET_ALL_CATEGORIES = "/get-all-categories";
+    static GET_CATEGORY_INFO_BY_NAME = "/get-category-info-by-name";
 }
 
 export default APIConfig;

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getBigQueryData, getGA4Data, readCategoryFileData } from "../utils";
 import Constants from "../utils/constant";
 const NOT_SUPPORTED = -2;
@@ -753,7 +754,7 @@ export const getResultByEvent = async ({
     }
 };
 
-export const getCategories = () => {
+const getCategories = () => {
     const allMainTopics = readCategoryFileData();
     const wszTopics = allMainTopics.find(
         (c: any) => c._id == Constants.ENGLISH_CATEGORY_ID
@@ -824,4 +825,64 @@ export const getSheetCategories = () => {
     });
 
     return result;
+};
+
+export const getInfosByCategoryName = async ({
+    startDate,
+    endDate,
+    topicName,
+}: {
+    startDate: string;
+    endDate: string;
+    topicName: string;
+}) => {
+    const wszUrl = "https://api.worksheetzone.org/api";
+    let mainCategory = getCategories().find((c: any) => c.name === topicName);
+    if (!mainCategory) return [];
+    let listPromises = [];
+
+    const promise = axios.post(wszUrl + "/get-number-downloaded-worksheet", {
+        endDate,
+        startDate,
+    });
+
+    listPromises = mainCategory.children.map((c: any) => {
+        return axios.post(wszUrl + "/get-worksheets-by-category-id", {
+            categoryId: c._id,
+            grade: "",
+            language: "",
+            limit: 100000,
+            loadFull: false,
+            offset: 0,
+            worksheetId: [],
+            worksheetType: 2,
+        });
+    });
+
+    listPromises.unshift(promise);
+
+    let data = await Promise.all(listPromises)
+        .then((res) => res.map((r) => r.data))
+        .catch((e) => {
+            console.log(e);
+            return [];
+        });
+    const numberDownLoadedWs = data.shift();
+
+    data = data.map((wsByCategory: any, index: number) => {
+        let totalDownloaded = 0;
+        wsByCategory.worksheets.forEach((w: any) => {
+            const wsInfo = numberDownLoadedWs.find(
+                (info: any) => info._id === w._id
+            );
+            totalDownloaded += wsInfo ? wsInfo.numberDownload : 0;
+        });
+        return {
+            ...mainCategory.children[index],
+            numberOfWorksheets: wsByCategory.numberOfWorksheets,
+            totalDownloaded,
+        };
+    });
+
+    return data.map((d: any) => [d.numberOfWorksheets, d.totalDownloaded]);
 };
