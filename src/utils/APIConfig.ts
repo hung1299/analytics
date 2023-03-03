@@ -4,9 +4,9 @@ class APIConfig {
 
     static GET_ANSWER_BY_QUESTION = "/get-answer-by-question";
 
-    static GET_SOURCES = "/get_sources";
-    static GET_TRAFFIC_REFERRAL_SOURCES = "/get_traffic_referral_sources";
-    static GET_DATA_BY_EVENT = "/get_data_by_event";
+    static GET_SOURCES = "/get-sources";
+    static GET_TRAFFIC_REFERRAL_SOURCES = "/get-traffic-referral-sources";
+    static GET_DATA_BY_EVENT = "/get-data-by-event";
 
     static GET_LIST_WORKSHEET_CONVERT = "/get-list-ws-convert";
     static GET_WS_CONVERT_INFO = "/get-ws-convert-info";
