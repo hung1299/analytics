@@ -6,15 +6,17 @@ import {
     getTrafficReferralSources,
     getWSInfoByEvent,
     getCategoryInfoByName,
+    getSources,
 } from "../controllers/wsz-browsing-analytics.controller";
 import APIConfig from "../utils/APIConfig";
 
 const wszBrowsingAnalyticsRouter = express.Router();
 
-wszBrowsingAnalyticsRouter.post(
+wszBrowsingAnalyticsRouter.get(
     APIConfig.GET_TRAFFIC_REFERRAL_SOURCES,
     getTrafficReferralSources
 );
+wszBrowsingAnalyticsRouter.get(APIConfig.GET_SOURCES, getSources);
 wszBrowsingAnalyticsRouter.post(APIConfig.GET_DATA_BY_EVENT, getDataByEvent);
 wszBrowsingAnalyticsRouter.post(APIConfig.GET_ALL_CATEGORIES, getAllCategories);
 
