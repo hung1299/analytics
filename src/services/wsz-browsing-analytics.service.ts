@@ -1,5 +1,6 @@
 import axios from "axios";
-import { getBigQueryData, getGA4Data, readCategoryFileData } from "../utils";
+import ReferralModel from "../mongo/referral.mongo";
+import { getBigQueryData, getGA4Data, readDataByFileName } from "../utils";
 import Constants from "../utils/constant";
 const NOT_SUPPORTED = -2;
 
@@ -37,6 +38,53 @@ const getQueryCondition = ({
             }
         } else if (sourceName === "(direct)") {
             query += " AND traffic_source.source = '(direct)' ";
+        }
+    } else {
+        query = query?.replace(
+            "WHERE",
+            "CROSS JOIN UNNEST(event_params) epSource WHERE"
+        );
+        query +=
+            " AND epSource.key = 'ws_first_visit' AND epSource.value.string_value = 'landing'";
+    }
+
+    // device
+    if (device !== "all") {
+        query += " AND device.category = '" + device + "' ";
+    }
+    if (country == "All Countries except VN") {
+        query += " AND geo.country != 'Vietnam' ";
+    } else if (country == "US only") {
+        query += " AND geo.country = 'United States' ";
+    }
+    if (!query) {
+        return "";
+    }
+    return query;
+};
+
+const getQueryPGCondition = async ({
+    query,
+    device,
+    sourceName,
+    sourceSource,
+    country,
+}: IParams) => {
+    let allReferral = await ReferralModel.find({});
+    let data = allReferral.map((r) => r.value);
+    // source
+    if (sourceName === "google_ads") {
+        query +=
+            " AND traffic_source_medium = 'cpc' AND traffic_source = 'google'";
+    } else if (sourceName !== "landing") {
+        if (sourceName === "(referral)" && sourceSource !== "all") {
+            if (sourceSource === "facebook") {
+                query += " AND traffic_source LIKE '%face%' ";
+            } else {
+                query += " AND traffic_source LIKE '%" + sourceSource + "%' ";
+            }
+        } else if (sourceName === "(direct)") {
+            query += " AND traffic_source = '(direct)' ";
         }
     } else {
         query = query?.replace(
@@ -755,7 +803,7 @@ export const getResultByEvent = async ({
 };
 
 const getCategories = () => {
-    const allMainTopics = readCategoryFileData();
+    const allMainTopics = readDataByFileName("category-data");
     const wszTopics = allMainTopics.find(
         (c: any) => c._id == Constants.ENGLISH_CATEGORY_ID
     );

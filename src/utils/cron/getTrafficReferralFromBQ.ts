@@ -8,7 +8,7 @@ const getTrafficReferralSource = async () => {
 
         let endDate: any = new Date();
         const dd = String(endDate.getDate()).padStart(2, "0");
-        const mm = String(endDate.getMonth() + 1).padStart(2, "0"); //January is 0!
+        const mm = String(endDate.getMonth() + 1).padStart(2, "0");
         const yyyy = endDate.getFullYear();
         endDate = yyyy + mm + dd;
         const query =
